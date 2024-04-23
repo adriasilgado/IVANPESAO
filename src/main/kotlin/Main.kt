@@ -1,9 +1,9 @@
 import com.mongodb.reactivestreams.client.MongoClients
 import com.mongodb.reactivestreams.client.MongoCollection
 import org.bson.Document
-import java.io.File
 import org.json.simple.JSONArray
 import org.json.simple.parser.JSONParser
+import java.io.FileReader
 
 
 fun main() {
@@ -11,21 +11,22 @@ fun main() {
     val mongoClient = MongoClients.create(uri)
     val database = mongoClient.getDatabase("itb")
 
-    // Cargar y guardar el archivo people.json
-    val peopleCollection: MongoCollection<Document> = database.getCollection("people")
-    loadJsonIntoCollection("people.json", peopleCollection)
+    // Leer y subir el primer archivo JSON
+    val collection1 = database.getCollection("collection1")
+    uploadJsonToMongoDB("path/to/your/first.json", collection1)
 
-    // Cargar y guardar el archivo products.json
-    val productsCollection: MongoCollection<Document> = database.getCollection("products")
-    loadJsonIntoCollection("products.json", productsCollection)
+    // Leer y subir el segundo archivo JSON
+    val collection2 = database.getCollection("collection2")
+    uploadJsonToMongoDB("path/to/your/second.json", collection2)
 }
 
-fun loadJsonIntoCollection(fileName: String, collection: MongoCollection<Document>) {
+fun uploadJsonToMongoDB(filePath: String, collection: MongoCollection<Document>) {
     val parser = JSONParser()
-    val jsonArray: JSONArray = parser.parse(File(fileName).reader()) as JSONArray
+    val jsonArray = parser.parse(FileReader(filePath)) as JSONArray
 
-    for (item in jsonArray) {
-        val document = Document.parse(item.toString())
+    // Convertir cada objeto JSON en un documento MongoDB y subirlo a la base de datos
+    for (jsonObj in jsonArray) {
+        val document = Document.parse(jsonObj.toString())
         collection.insertOne(document)
     }
 }
