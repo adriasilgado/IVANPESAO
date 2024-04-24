@@ -1,32 +1,37 @@
 import com.mongodb.reactivestreams.client.MongoClients
 import com.mongodb.reactivestreams.client.MongoCollection
 import org.bson.Document
-import org.json.simple.JSONArray
-import org.json.simple.parser.JSONParser
-import java.io.FileReader
+import java.io.File
+
 
 
 fun main() {
-    val uri = "mongodb+srv://<username>:<password>@clusterpractica.muro8id.mongodb.net/?retryWrites=true&w=majority&appName=ClusterPractica"
+    // Connection to the MongoDB
+    val uri = "mongodb+srv://adriasilgado:123456@clusterpractica.muro8id.mongodb.net/?retryWrites=true&w=majority&appName=ClusterPractica"
     val mongoClient = MongoClients.create(uri)
-    val database = mongoClient.getDatabase("itb")
 
-    // Leer y subir el primer archivo JSON
-    val collection1 = database.getCollection("collection1")
-    uploadJsonToMongoDB("path/to/your/first.json", collection1)
+    //Connection to the database
+    val dbItb = mongoClient.getDatabase("itb")
 
-    // Leer y subir el segundo archivo JSON
-    val collection2 = database.getCollection("collection2")
-    uploadJsonToMongoDB("path/to/your/second.json", collection2)
-}
+    //Connection to the collections
+    val collectionRestaurants: MongoCollection<Document> = dbItb.getCollection("restaurants")
+    val collectionProducts : MongoCollection<Document> = dbItb.getCollection("products")
 
-fun uploadJsonToMongoDB(filePath: String, collection: MongoCollection<Document>) {
-    val parser = JSONParser()
-    val jsonArray = parser.parse(FileReader(filePath)) as JSONArray
-
-    // Convertir cada objeto JSON en un documento MongoDB y subirlo a la base de datos
-    for (jsonObj in jsonArray) {
-        val document = Document.parse(jsonObj.toString())
-        collection.insertOne(document)
+    //Inserting the data from the restaurants JSON
+    val jsonFileRestaurants = File("JSON/restaurants.json")
+    val documents = mutableListOf<Document>()
+    jsonFileRestaurants.forEachLine {restuarant ->
+        val document = Document.parse(restuarant)
+        documents.add(document)
     }
+    collectionRestaurants.insertMany(documents)
+
+    //Inserting the data from the products JSON
+    val jsonFileBooks = File("JSON/products.json")
+    documents.clear()
+    jsonFileBooks.forEachLine { product ->
+        val document = Document.parse(product)
+        documents.add(document)
+    }
+    collectionProducts.insertMany(documents)
 }
