@@ -27,9 +27,9 @@ fun main() {
     collectionRestaurants.insertMany(documents)
 
     //Inserting the data from the products JSON
-    val jsonFileBooks = File("JSON/products.json")
+    val jsonFileProducts = File("JSON/products.json")
     documents.clear()
-    jsonFileBooks.forEachLine { product ->
+    jsonFileProducts.forEachLine { product ->
         val document = Document.parse(product)
         documents.add(document)
     }
